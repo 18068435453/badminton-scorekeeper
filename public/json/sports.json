@@ -1,0 +1,59 @@
+{
+  "sports": [
+    {
+      "id": "badminton",
+      "name": "羽毛球",
+      "icon": "🏸",
+      "defaultFormat": "3-2",
+      "defaultPoints": 21,
+      "description": "标准羽毛球比赛"
+    },
+    {
+      "id": "tennis",
+      "name": "网球",
+      "icon": "🎾",
+      "defaultFormat": "3-2",
+      "defaultPoints": 15,
+      "description": "网球比赛计分"
+    },
+    {
+      "id": "pingpong",
+      "name": "乒乓球",
+      "icon": "🏓",
+      "defaultFormat": "3-2",
+      "defaultPoints": 11,
+      "description": "乒乓球比赛"
+    },
+    {
+      "id": "volleyball",
+      "name": "排球",
+      "icon": "🏐",
+      "defaultFormat": "3-2",
+      "defaultPoints": 25,
+      "description": "排球比赛"
+    }
+  ],
+  "matchFormats": [
+    {
+      "value": "1",
+      "text": "1局定胜负",
+      "desc": "单局决胜"
+    },
+    {
+      "value": "3-2",
+      "text": "3局2胜",
+      "desc": "最多3局"
+    },
+    {
+      "value": "5-3",
+      "text": "5局3胜",
+      "desc": "最多5局"
+    },
+    {
+      "value": "7-4",
+      "text": "7局4胜",
+      "desc": "最多7局"
+    }
+  ],
+  "pointOptions": [11, 15, 21, 25]
+}
