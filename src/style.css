@@ -70,3 +70,13 @@ button {
   background: #c0392b;
   transform: scale(0.98);
 }
+
+@font-face {
+  font-family: 'arialmt';
+  src: url('/font/ArialMT.ttf');
+}
+
+@font-face {
+  font-family: 'bebas-regular';
+  src: url('/font/bebas regular.TTF');
+}
