@@ -6,7 +6,7 @@
         <div class="scoreboard-vertical">
           <!-- 选手1 -->
           <div class="player-card player1">
-            <div class="score-buttons">
+            <div class="score-buttons rotate90">
               <van-button
                 size="small"
                 @click="subtractPoint(1)"
@@ -67,12 +67,12 @@
               </div>
             </div>
 
-            <div class="score-buttons" style="margin-top: 8%">
+            <div class="score-buttons" style="margin-top: 18%">
               <van-button
                 size="small"
                 @click="subtractPoint(2)"
                 :disabled="player2Score === 0"
-                class="minus-btn"
+                class="minus-btn rotate90"
               >
                 -1
               </van-button>
@@ -82,13 +82,24 @@
         <!-- 大比分显示 -->
         <div class="match-score-section">
           <div class="match-score">
-            <!-- <van-rate v-model="player1Sets" :count="parseInt(gameData.settings.winsRequired)" :readonly="true"
-              :size="25" color="#ee0a24" void-color="#f5f5f5" class="player-rate" /> -->
-            <div class="vs-text rotate90">
-              {{ player1Sets }} - {{ player2Sets }}
-            </div>
-            <!-- <van-rate v-model="player2Sets" :count="parseInt(gameData.settings.winsRequired)" :readonly="true"
-              :size="25" color="#1989fa" void-color="#f5f5f5" class="player-rate" /> -->
+            <van-rate
+              v-model="player1Sets"
+              :count="parseInt(gameData.settings.winsRequired)"
+              :readonly="true"
+              :size="28"
+              color="#ee0a24"
+              void-color="#f5f5f5"
+              class="rotate90"
+            />
+            <van-rate
+              v-model="player2Sets"
+              :count="parseInt(gameData.settings.winsRequired)"
+              :readonly="true"
+              :size="28"
+              color="#1989fa"
+              void-color="#f5f5f5"
+              class="rotate90"
+            />
           </div>
         </div>
 
@@ -123,7 +134,7 @@
       <van-dialog
         v-model:show="showMatchResult"
         title="🎉 比赛结束"
-        :message="`${winner} 获胜！\n最终比分：${player1Sets} - ${player2Sets}`"
+        :message="getMatchResultMessage()"
         confirm-button-text="重新开始"
         @confirm="resetMatch"
       />
@@ -151,8 +162,8 @@ export default {
   },
   data() {
     return {
-      player1Name: "选手A",
-      player2Name: "选手B",
+      player1Name: "蓝方",
+      player2Name: "红方",
       player1Score: 0,
       player2Score: 0,
       player1Sets: 0,
@@ -160,7 +171,17 @@ export default {
       currentSet: 1,
       showMatchResult: false,
       showSetResult: false,
+      matchStartTime: null,
+      setStartTime: null,
+      pointStartTime: null,
+      setHistory: [], // 每局的历史记录
+      currentSetLongestRally: 0, // 当前局最长回合时间
     };
+  },
+  mounted() {
+    this.matchStartTime = Date.now();
+    this.setStartTime = Date.now();
+    this.pointStartTime = Date.now();
   },
   computed: {
     bgColorStyle() {
@@ -241,11 +262,23 @@ export default {
     addPoint(player) {
       if (this.setEnded || this.matchEnded) return;
 
+      // 计算本次得分的回合时间
+      const now = Date.now();
+      const rallyDuration = now - this.pointStartTime;
+
+      // 更新当前局最长回合时间
+      if (rallyDuration > this.currentSetLongestRally) {
+        this.currentSetLongestRally = rallyDuration;
+      }
+
       if (player === 1) {
         this.player1Score++;
       } else {
         this.player2Score++;
       }
+
+      // 重置回合计时
+      this.pointStartTime = now;
     },
     subtractPoint(player) {
       if (player === 1 && this.player1Score > 0) {
@@ -255,6 +288,16 @@ export default {
       }
     },
     nextSet() {
+      // 保存当前局的数据
+      const setDuration = Date.now() - this.setStartTime;
+      this.setHistory.push({
+        setNumber: this.currentSet,
+        player1Score: this.player1Score,
+        player2Score: this.player2Score,
+        duration: setDuration,
+        longestRally: this.currentSetLongestRally,
+      });
+
       if (this.player1Score > this.player2Score) {
         this.player1Sets++;
       } else {
@@ -265,6 +308,11 @@ export default {
       this.player1Score = 0;
       this.player2Score = 0;
       this.showSetResult = false;
+
+      // 重置下一局的计时
+      this.setStartTime = Date.now();
+      this.pointStartTime = Date.now();
+      this.currentSetLongestRally = 0;
     },
     resetMatch() {
       this.player1Score = 0;
@@ -274,6 +322,51 @@ export default {
       this.currentSet = 1;
       this.showMatchResult = false;
       this.showSetResult = false;
+      this.setHistory = [];
+      this.matchStartTime = Date.now();
+      this.setStartTime = Date.now();
+      this.pointStartTime = Date.now();
+      this.currentSetLongestRally = 0;
+    },
+    formatDuration(milliseconds) {
+      const seconds = Math.floor(milliseconds / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      if (minutes > 0) {
+        return `${minutes}分${secs}秒`;
+      }
+      return `${seconds}秒`;
+    },
+    getMatchResultMessage() {
+      // 保存最后一局数据（如果还没保存）
+      if (this.matchEnded && this.player1Score + this.player2Score > 0) {
+        const lastSetInHistory = this.setHistory.find(
+          (set) => set.setNumber === this.currentSet
+        );
+        if (!lastSetInHistory) {
+          const setDuration = Date.now() - this.setStartTime;
+          this.setHistory.push({
+            setNumber: this.currentSet,
+            player1Score: this.player1Score,
+            player2Score: this.player2Score,
+            duration: setDuration,
+            longestRally: this.currentSetLongestRally,
+          });
+        }
+      }
+
+      const totalDuration = this.formatDuration(
+        Date.now() - this.matchStartTime
+      );
+
+      let message = `${this.winner} 获胜！\n最终比分：${this.player1Sets} - ${this.player2Sets}\n总时长：${totalDuration}\n\n`;
+
+      message += "各局详情：\n";
+      this.setHistory.forEach((set) => {
+        message += `第${set.setNumber}局：${set.player1Score}-${set.player2Score} | 时长：${this.formatDuration(set.duration)} | 最长回合：${this.formatDuration(set.longestRally)}\n`;
+      });
+
+      return message;
     },
   },
 };
@@ -328,7 +421,7 @@ export default {
 
 .match-score-section {
   display: flex;
-  width: 25vw;
+  width: 30vw;
   height: 100vh;
   align-items: center;
 }
@@ -345,10 +438,8 @@ export default {
   flex-direction: column;
   align-items: center;
   width: 100%;
-}
-
-.player-rate {
-  flex: 1;
+  height: 100%;
+  justify-content: space-evenly;
 }
 
 .vs-text {
@@ -386,7 +477,7 @@ export default {
 }
 
 .player-card .score-content {
-  margin-top: 8%;
+  margin-top: 16%;
 }
 
 .score-content .score-display:nth-child(2) {
@@ -410,7 +501,8 @@ export default {
 }
 
 .score-buttons {
-  height: 18%;
+  height: 12%;
+  display: flex;
 }
 
 .score-btn {
@@ -422,8 +514,8 @@ export default {
 }
 
 .minus-btn {
-  width: 50px;
-  height: 40px;
+  width: 6vh;
+  height: 100%;
   font-size: 16px;
 }
 
