@@ -6,7 +6,9 @@
       "icon": "🏸",
       "defaultFormat": "3-2",
       "defaultPoints": 21,
-      "description": "羽毛球比赛"
+      "description": "羽毛球比赛",
+      "requireTwoPointLead": true,
+      "maxScore": 30
     },
     {
       "id": "tennis",
@@ -14,7 +16,9 @@
       "icon": "🎾",
       "defaultFormat": "3-2",
       "defaultPoints": 15,
-      "description": "网球比赛计分"
+      "description": "网球比赛计分",
+      "requireTwoPointLead": true,
+      "maxScore": null
     },
     {
       "id": "pingpong",
@@ -22,7 +26,9 @@
       "icon": "🏓",
       "defaultFormat": "3-2",
       "defaultPoints": 11,
-      "description": "乒乓球比赛"
+      "description": "乒乓球比赛",
+      "requireTwoPointLead": true,
+      "maxScore": null
     },
     {
       "id": "volleyball",
@@ -30,7 +36,9 @@
       "icon": "🏐",
       "defaultFormat": "3-2",
       "defaultPoints": 25,
-      "description": "排球比赛"
+      "description": "排球比赛",
+      "requireTwoPointLead": true,
+      "maxScore": null
     }
   ],
   "matchFormats": [
